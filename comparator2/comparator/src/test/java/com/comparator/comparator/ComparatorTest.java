@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ComparatorTest {
     private final GuessService guessService = new GuessService();
     @Test
-    void testPerformCompare(){
+    void TestPerformCompare(){
         int i=0, value = guessService.getValue();
         while(i!=value){
             i++;
@@ -15,4 +15,14 @@ public class ComparatorTest {
         boolean expected = true;
         assertEquals(expected, i==value);
     }
+//    @Test
+//    void BadTestPerformCompare(){
+//        int i=0, value = guessService.getValue();
+//        while(i!=value++){
+//            i++;
+//        }
+//        boolean expected = true;
+//        assertEquals(expected, i==value);
+//    }
 }
+

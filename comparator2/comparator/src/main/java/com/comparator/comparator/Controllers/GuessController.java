@@ -1,7 +1,9 @@
 package com.comparator.comparator.Controllers;
-import com.comparator.comparator.Counter.RequestCounter;
+import com.comparator.comparator.Counter.RequestCounterThread;
+import com.comparator.comparator.Entity.CalculationResult;
 import com.comparator.comparator.Entity.ComparatorParams;
 import com.comparator.comparator.Exceptions.NumberException;
+import com.comparator.comparator.Repository.ResultRepository;
 import com.comparator.comparator.Service.GuessService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,20 +12,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
 @RestController
-public class GuessController {
+public class GuessController{
 
     private final Logger logger = LogManager.getLogger(GuessController.class);
     private final GuessService guessService;
-
-    public GuessController(GuessService guessService) {
+    private final ResultRepository resultRepository;
+    public GuessController(GuessService guessService, ResultRepository resultRepository) {
         this.guessService = guessService;
+        this.resultRepository = resultRepository;
     }
     @RequestMapping(value = "/guess", method = RequestMethod.GET, produces = "application/json")
     public HashMap<String, Boolean> guess(@RequestParam(name = "number")int number) throws NumberException{
@@ -35,16 +38,13 @@ public class GuessController {
         }
         ComparatorParams comparatorParams = new ComparatorParams(number);
 
-        Semaphore semaphore = new Semaphore(1, true);
-        try {
-            semaphore.acquire();
-            RequestCounter.inc();
-            semaphore.release();
-        } catch (InterruptedException e) {
-            logger.warn(Thread.currentThread().getName() + "was interrupted");
-        }
+        RequestCounterThread requestCounterThread = new RequestCounterThread("Request-CounterThread");
+        requestCounterThread.start();
+        Boolean result = guessService.guessValue(comparatorParams);
+        CalculationResult calculationResult = new CalculationResult(result);
+        resultRepository.save(calculationResult);
         return new HashMap<>(){{
-            put("result", guessService.guessValue(comparatorParams));
+            put("result", result);
         }};
     }
 

@@ -6,7 +6,10 @@ public class ComparatorParams {
     private int number;
 
     public ComparatorParams(int number) {
-        this.number = number;
+            this.number = number;
+    }
+
+    public ComparatorParams() {
     }
 
     public int getNumber() {
